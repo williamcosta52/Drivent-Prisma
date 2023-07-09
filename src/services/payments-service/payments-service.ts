@@ -7,10 +7,11 @@ import {
 import {
   getTicketById,
   getTicketTypeById,
+  updateTicket,
   verifyEnrollmentRepository,
 } from '../../repositories/tickets-repository/tickets-repository';
 
-export async function getPaymenService(ticketId: string, userId: number) {
+export async function getPaymenService(ticketId: number, userId: number) {
   const ticket = await getTicketById(ticketId);
   if (!ticket) throw notFoundError();
   const enrollment = await verifyEnrollmentRepository(userId);
@@ -18,10 +19,19 @@ export async function getPaymenService(ticketId: string, userId: number) {
   const payment = await getPaymentRepository(ticketId);
   return payment;
 }
-export async function payment(paymentsInfo: Payment) {
+export async function payment(paymentsInfo: Payment, userId: number) {
   const ticket = await getTicketById(paymentsInfo.ticketId);
   if (!ticket) throw notFoundError();
+
+  const enrollment = await verifyEnrollmentRepository(userId);
+
+  if (enrollment.id !== ticket.enrollmentId) throw unauthorizedError();
+
   const ticketInfo = await getTicketTypeById(ticket.ticketTypeId);
-  const insertPayment = await insertPaymentRepository(paymentsInfo, ticketInfo);
+
+  const insertPayment = await insertPaymentRepository(paymentsInfo, ticketInfo.price);
+
+  await updateTicket(ticket.id);
+
   return insertPayment;
 }

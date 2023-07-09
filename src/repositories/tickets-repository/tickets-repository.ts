@@ -1,6 +1,5 @@
 import { Enrollment } from '@prisma/client';
 import { prisma } from '../../config';
-import { TicketObject } from '../../protocols';
 
 export async function getTicketTypeRepository() {
   return await prisma.ticketType.findMany();
@@ -67,5 +66,15 @@ export async function getTicketById(ticketId: string | number) {
 export async function getTicketTypeById(ticketTypeId: number) {
   return await prisma.ticketType.findFirst({
     where: { id: ticketTypeId },
+  });
+}
+export async function updateTicket(ticketId: number) {
+  return await prisma.ticket.update({
+    where: {
+      id: ticketId,
+    },
+    data: {
+      status: 'PAID',
+    },
   });
 }
